@@ -62,7 +62,7 @@ app.use(function(err, req, res, next) {
 });
 
 // Cron Job every 1 minute
-cron.schedule("*/60 * * * *", function () {
+cron.schedule("*/1 * * * *", function () {
   console.log("Checking database every hour");
   task.updatePlantJob();
 });
