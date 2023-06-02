@@ -60,34 +60,38 @@ function updatePlantJob(){
                         [clone.rows[0].id, arrTag[1], arrTag[2], nursery.rows[0].id, plant_scan.rows[i].tag_id, 1, arrTag[4]])
                             .catch(e => console.error(e.stack));
 
-                        if(check.rowCount > 0){
-                            console.log("Inserting plant successful");
-                            //update status to 1 (updated)
-                            await client.query('UPDATE plant_scan SET status=1 WHERE id=$1', [plant_scan.rows[i].id]);
-                        }
+                        // if(check.rowCount > 0){
+                        //     console.log("Inserting plant successful");
+                        //     //update status to 1 (updated)
+                        //     await client.query('UPDATE plant_scan SET status=1 WHERE id=$1', [plant_scan.rows[i].id]);
+                        // }
                     }
                 }
                 // Mode 2: Change plant on plant tag
                 if(plant_scan.rows[i].mode == '2'){
                     //1. create "plant_old" entity
-                    await client.query('INSERT INTO plant_old(id, clone_id, location_origin, date_sow, nursery_id, tag_id, status, created_at, dsb, plant_id) SELECT id, clone_id, location_origin, date_sow, nursery_id, tag_id, status, created_at, dsb, plant_id FROM plant WHERE tag_id=$1',[plant_scan.rows[i].tag_id]);
+                    // await client.query('INSERT INTO plant_old(id, clone_id, location_origin, date_sow, nursery_id, tag_id, status, created_at, dsb, plant_id) SELECT id, clone_id, location_origin, date_sow, nursery_id, tag_id, status, created_at, dsb, plant_id FROM plant WHERE tag_id=$1',[plant_scan.rows[i].tag_id])
+                    // .catch(e => console.error(e.stack));
+                    await client.query('INSERT INTO plant_old(id, clone_id, location_origin, date_sow, nursery_id, tag_id, status, created_at, dsb, plant_id) SELECT * FROM plant WHERE tag_id=$1',[plant_scan.rows[i].tag_id])
+                    .catch(e => console.error(e.stack));
 
                     // 2. Delete "plant" entity
-                    // await client.query('DELETE FROM plant WHERE tag_id=$1', [plant_scan.rows[i].tag_id])
+                    await client.query('DELETE FROM plant WHERE tag_id=$1', [plant_scan.rows[i].tag_id])
+                    .catch(e => console.error(e.stack));
 
                     // 3. Create new "plant" entity
                     // Insert plant data
-                    // console.log("Inserting plant...");
+                    console.log("Inserting plant...");
                         
-                    // const check = await client.query('INSERT INTO plant (clone_id, location_origin, date_sow, nursery_id, tag_id, status, dsb) VALUES ($1, $2, $3, $4, $5, $6, $7)', 
-                    // [clone.rows[0].id, arrTag[1], arrTag[2], nursery.rows[0].id, plant_scan.rows[i].tag_id, 1, arrTag[4]])
-                    //     .catch(e => console.error(e.stack));
+                    const check = await client.query('INSERT INTO plant (clone_id, location_origin, date_sow, nursery_id, tag_id, status, dsb) VALUES ($1, $2, $3, $4, $5, $6, $7)', 
+                    [clone.rows[0].id, arrTag[1], arrTag[2], nursery.rows[0].id, plant_scan.rows[i].tag_id, 1, arrTag[4]])
+                        .catch(e => console.error(e.stack));
 
-                    // if(check.rowCount > 0){
-                    //     console.log("Inserting plant successful");
-                    //     //update status to 1 (updated)
-                    //     await client.query('UPDATE plant_scan SET status=1 WHERE id=$1', [plant_scan.rows[i].id]);
-                    // }
+                    if(check.rowCount > 0){
+                        console.log("Inserting plant successful");
+                        //update status to 1 (updated)
+                        await client.query('UPDATE plant_scan SET status=1 WHERE id=$1', [plant_scan.rows[i].id]);
+                    }
 
 
                 }

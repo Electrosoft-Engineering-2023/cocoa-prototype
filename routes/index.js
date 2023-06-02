@@ -78,29 +78,11 @@ router.post('/createUser', function(req, res) {
   });
 });
 
-router.post('/uplink', function(req, res) {
+router.get('/test', function(req, res) {
 
   console.log("helo");
-  res.send("okay");
+  res.render('test', { });
 });
 
-router.post('/uplink/31777B94', function(req, res) {
-
-  console.log("helo dev uplink");
-  res.send("okay");
-});
-
-router.post('/events', function(req, res) {
-
-  console.log("helo");
-  res.send("okay");
-
-});
-
-router.post('/events/31777B94', function(req, res) {
-
-  console.log("helo dev event");
-  res.send("okay");
-});
 
 module.exports = router;

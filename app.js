@@ -32,6 +32,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Set Templating Engine
 app.use(expressLayouts)
+app.set('layout', false)
 // app.set('layout', './layouts/full-width')
 
 
@@ -62,7 +63,7 @@ app.use(function(err, req, res, next) {
 });
 
 // Cron Job every 1 minute
-cron.schedule("*/1 * * * *", function () {
+cron.schedule("*/60 * * * *", function () {
   console.log("Checking database every hour");
   task.updatePlantJob();
 });
