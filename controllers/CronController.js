@@ -2,12 +2,12 @@ function updatePlantJob(){
     var pool = require('../database.js');
     const format = require('pg-format');
 
-    pool.connect(function (err, client, done) {
+    pool.connect(async function (err, client, done) {
         if (err) throw new Error(err);
 
         var query = format('SELECT * from plant_scan WHERE status=0 AND mode!=0 ORDER BY datetime_scan ASC');
         
-        return client.query(query, async function (err, plant_scan) {
+        await client.query(query, async function (err, plant_scan) {
             if (err) throw new Error(err);
             
             // loop through each plant_scan
@@ -21,6 +21,9 @@ function updatePlantJob(){
                     // Seperate string into array by comma
                     const strTag = plant_scan.rows[i].tag_text;
                     const arrTag = strTag.split(",");
+
+                    const location_origin = arrTag[1].split(" ");
+
                     //clone,location_origin,date_sow,nursery,dsb
 
                     //find clone id
@@ -42,8 +45,8 @@ function updatePlantJob(){
                     if(plant.rows.length > 0){
                         // Update plant data
                         console.log("Updating plant...");
-                        const check = await client.query('UPDATE plant SET location_origin=$1, nursery_id=$2, dsb=$3 WHERE tag_id=$4', 
-                        [arrTag[1], nursery.rows[0].id, arrTag[4], plant_scan.rows[i].tag_id])
+                        const check = await client.query('UPDATE plant SET coordinate_lat=$1, coordinate_long=$2, nursery_id=$3, dsb=$4, created_at=NOW()  WHERE tag_id=$5', 
+                        [location_origin[0], location_origin[1], nursery.rows[0].id, arrTag[4], plant_scan.rows[i].tag_id])
                             .catch(e => console.error(e.stack));
                         
                         if(check.rowCount > 0){
@@ -55,25 +58,27 @@ function updatePlantJob(){
                     else{
                         // Insert plant data
                         console.log("Inserting plant...");
+                        console.log(location_origin[0]);
                         
-                        const check = await client.query('INSERT INTO plant (clone_id, location_origin, date_sow, nursery_id, tag_id, status, dsb) VALUES ($1, $2, $3, $4, $5, $6, $7)', 
-                        [clone.rows[0].id, arrTag[1], arrTag[2], nursery.rows[0].id, plant_scan.rows[i].tag_id, 1, arrTag[4]])
+                        const check = await client.query('INSERT INTO plant (clone_id, coordinate_lat, coordinate_long, date_sow, nursery_id, tag_id, status, dsb) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)', 
+                        [clone.rows[0].id, location_origin[0], location_origin[1], arrTag[2], nursery.rows[0].id, plant_scan.rows[i].tag_id, 1, arrTag[4]])
                             .catch(e => console.error(e.stack));
+                        
 
-                        // if(check.rowCount > 0){
-                        //     console.log("Inserting plant successful");
-                        //     //update status to 1 (updated)
-                        //     await client.query('UPDATE plant_scan SET status=1 WHERE id=$1', [plant_scan.rows[i].id]);
-                        // }
+                        if(check.rowCount > 0){
+                            console.log("Inserting plant successful");
+                            //update status to 1 (updated)
+                            await client.query('UPDATE plant_scan SET status=1 WHERE id=$1', [plant_scan.rows[i].id]);
+                        }
                     }
                 }
                 // Mode 2: Change plant on plant tag
                 if(plant_scan.rows[i].mode == '2'){
                     //1. create "plant_old" entity
-                    // await client.query('INSERT INTO plant_old(id, clone_id, location_origin, date_sow, nursery_id, tag_id, status, created_at, dsb, plant_id) SELECT id, clone_id, location_origin, date_sow, nursery_id, tag_id, status, created_at, dsb, plant_id FROM plant WHERE tag_id=$1',[plant_scan.rows[i].tag_id])
-                    // .catch(e => console.error(e.stack));
-                    await client.query('INSERT INTO plant_old(id, clone_id, location_origin, date_sow, nursery_id, tag_id, status, created_at, dsb, plant_id) SELECT * FROM plant WHERE tag_id=$1',[plant_scan.rows[i].tag_id])
+                    await client.query('INSERT INTO plant_old(id, clone_id, coordinate_lat, coordinate_long, date_sow, nursery_id, tag_id, status, created_at, dsb, plant_id) SELECT id, clone_id, coordinate_lat, coordinate_long, date_sow, nursery_id, tag_id, status, created_at, dsb, plant_id FROM plant WHERE tag_id=$1',[plant_scan.rows[i].tag_id])
                     .catch(e => console.error(e.stack));
+                    // await client.query('INSERT INTO plant_old(id, clone_id, location_origin, date_sow, nursery_id, tag_id, status, created_at, dsb, plant_id) SELECT * FROM plant WHERE tag_id=$1',[plant_scan.rows[i].tag_id])
+                    // .catch(e => console.error(e.stack));
 
                     // 2. Delete "plant" entity
                     await client.query('DELETE FROM plant WHERE tag_id=$1', [plant_scan.rows[i].tag_id])
@@ -83,8 +88,8 @@ function updatePlantJob(){
                     // Insert plant data
                     console.log("Inserting plant...");
                         
-                    const check = await client.query('INSERT INTO plant (clone_id, location_origin, date_sow, nursery_id, tag_id, status, dsb) VALUES ($1, $2, $3, $4, $5, $6, $7)', 
-                    [clone.rows[0].id, arrTag[1], arrTag[2], nursery.rows[0].id, plant_scan.rows[i].tag_id, 1, arrTag[4]])
+                    const check = await client.query('INSERT INTO plant (clone_id, coordinate_lat, coordinate_long, date_sow, nursery_id, tag_id, status, dsb) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)', 
+                    [clone.rows[0].id, location_origin[0], location_origin[1], arrTag[2], nursery.rows[0].id, plant_scan.rows[i].tag_id, 1, arrTag[4]])
                         .catch(e => console.error(e.stack));
 
                     if(check.rowCount > 0){
@@ -92,17 +97,12 @@ function updatePlantJob(){
                         //update status to 1 (updated)
                         await client.query('UPDATE plant_scan SET status=1 WHERE id=$1', [plant_scan.rows[i].id]);
                     }
-
-
                 }
-                
             }
-
-            done();
-        })
+        });
+        done();
     });
 }
-// export {updatePlantJob};
 module.exports = {
     updatePlantJob,
 }

@@ -16,6 +16,8 @@ router.get('/clones', function(req, res, next) {
     var query = format('SELECT * from clone')
     const { rows } = await client.query(query);
 
+    done();
+
     res.render('clones', { title: 'Cocoa Clones', data: rows, layout: './layouts/full-width' });
   });   
 });
@@ -26,6 +28,8 @@ router.get('/scans', function(req, res, next) {
 
     var query = format('SELECT * from plant_scan')
     const { rows } = await client.query(query);
+
+    done();
 
     res.render('scans', { title: 'Scans', data: rows, layout: './layouts/full-width' });
   });   
@@ -38,6 +42,8 @@ router.get('/plants', function(req, res, next) {
     var query = format('SELECT * from plant')
     const { rows } = await client.query(query);
 
+    done();
+
     res.render('plants', { title: 'Plants', data: rows, layout: './layouts/full-width' });
   });   
 });
@@ -49,18 +55,43 @@ router.get('/workers', function(req, res, next) {
     var query = format('SELECT * from "user"')
     const { rows } = await client.query(query);
 
+    done();
+
     res.render('workers', { title: 'Workers', data: rows, layout: './layouts/full-width' });
   });   
 });
 
 router.post('/createClone', function(req, res) {
   const name = req.body.name;
+  const color = req.body.color;
 
   text = pool.connect(async function (err, client, done) {
     if (err) throw new Error(err);
 
-    var query = format('INSERT INTO clone (name) VALUES (%L)', name)
-    await client.query(query);
+    var query = format('INSERT INTO clone (name, color) VALUES ($1, $2)')
+    await client.query(query, [name, color]);
+
+    done();
+
+
+    res.redirect('back');
+  });
+});
+
+router.post('/updateClone/:id', function(req, res) {
+  const id = req.params.id;
+  const name = req.body.name;
+  const color = req.body.color;
+
+  text = pool.connect(async function (err, client, done) {
+    if (err) throw new Error(err);
+
+    var query = format('UPDATE clone SET name=$1, color=$2 WHERE id=$3')
+    await client.query(query, [name, color, id]);
+
+    done();
+
+
     res.redirect('back');
   });
 });
@@ -74,6 +105,9 @@ router.post('/createUser', function(req, res) {
 
     var query = format('INSERT INTO "user" (name,role) VALUES ($1,$2)')
     await client.query(query, [name,role]);
+    
+    done();
+
     res.redirect('back');
   });
 });

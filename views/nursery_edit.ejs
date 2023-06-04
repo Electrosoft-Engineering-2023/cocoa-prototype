@@ -1,24 +1,52 @@
 <div class="w3-container" style="height: 30vh;">
     <div class="w3-card-4 p-4 mb-4">
         <form id="editNurseryForm" method="POST">
-            <input id="nameInput" type="text" name="name" placeholder="Name" value=<%= centroid.name %> required>
+            <div class="row mb-2">
+              <div class="col-6">
+                <input id="nameInput" type="text" name="name" placeholder="Name" value=<%= centroid.name %> style="width: 100%;" required>
+              </div>
+              <div class="col-2">
+                <input type="color" id="color" name="color" value=<%= centroid.color %> style="height: 100%;" onchange="refreshPolygon()">
+              </div>
+              <div class="col-4"><button class="btn" type="submit">Edit Nursery</button></div>
+            </div>
             <div id="map" style="height: 400px;" class="leaf-overlay-below"></div>
-            <button class="btn" type="submit">Edit Nursery</button>
         </form>
     </div>
-  </div>
-
-  <!-- View Nursery Modal -->
-  <div id="id02" class="w3-modal">
-    <div class="w3-modal-content">
-      <div class="w3-container">
-        <span onclick="document.getElementById('id02').style.display='none'"
-        class="w3-button w3-display-topright">&times;</span>
-        <form id="editNurseryForm" method="POST">
-          <input id="nameInput" type="text" name="name" placeholder="Name" required>
-          <div id="map" style="height: 400px;" class="leaf-overlay-below"></div>
-          <button class="btn" type="submit">Edit Nursery</button>
-        </form>
+    <div class="w3-card-4 p-4 mb-4">
+      <div class="table-responsive w3-padding">                 
+        <table id="data-table" class="table table-striped table-bordered">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Tag ID</th>
+              <th>Clone ID</th>
+              <th>Latitude</th>
+              <th>Longitude</th>
+              <th>Date Sow</th>
+              <th>Nursery ID</th>
+              <th>Created At</th>
+              <th>DSB</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% plants.forEach(row => { %>
+              <tr>
+                <td><%= row.id %></td>
+                <td><%= row.tag_id %></td>
+                <td><%= row.clone_id%></td>
+                <td><%= row.coordinate_lat %></td>
+                <td><%= row.coordinate_long %></td>
+                <td><%= row.date_sow%></td>
+                <td><%= row.nursery_id %></td>
+                <td><%= row.created_at %></td>
+                <td><%= row.dsb %></td>
+                <td><%= row.status%></td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
@@ -31,9 +59,23 @@
   
     });
   </script>
-  <script>    
+  <script>  
+    //polygon array
+    polygonPoints = [];
+    var polygon;
+    markers = [];
+    var centroid;
+    plantMarkers = [];   
+
+    //draw from points
+    var arr;
+    var parameters = <%-JSON.stringify(parameters)%>;
+    var centroid = <%-JSON.stringify(centroid)%>;
+    var plants = <%-JSON.stringify(plants)%>;
+    var nurseryId = centroid.id;
+
     // initialize map
-    var map = L.map('map').setView([4.2105, 101.9758], 10);
+    var map = L.map('map').setView([centroid.coordinate_lat, centroid.coordinate_long], 15);
   
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
@@ -41,12 +83,7 @@
     }).addTo(map);
     //add geocoder to map
     L.Control.geocoder().addTo(map);
-  
-    //polygon array
-    polygonPoints = [];
-    var polygon;
-    markers = [];
-    var centroid;
+
   
     //marker icon style
     const redIcon = new L.Icon({
@@ -70,32 +107,36 @@
       shadowSize: [41, 41]
     });
 
-    //draw from points
-    var arr;
-    var parameters = <%-JSON.stringify(parameters)%>;
-    var centroid = <%-JSON.stringify(centroid)%>;
-    var nurseryId = centroid.id;
 
 
     //push points to local polygon points array
     parameters.forEach(parameter => {
-        polygonPoints.push([parseFloat(parameter.coordinate_lat), parseFloat(parameter.coordinate_long)]);
+      polygonPoints.push([parseFloat(parameter.coordinate_lat), parseFloat(parameter.coordinate_long)]);
 
-        //create markers too
-        markers.push(L.marker(polygonPoints[polygonPoints.length-1],{
-            draggable: true,
-            autoPan: true,
-            icon: redIcon
-        }).addTo(map));
+      //create markers too
+      markers.push(L.marker(polygonPoints[polygonPoints.length-1],{
+          draggable: true,
+          autoPan: true,
+          icon: redIcon
+      }).addTo(map));
 
     });
-    polygon = L.polygon(polygonPoints).addTo(map);
+    polygon = L.polygon(polygonPoints).addTo(map).setStyle({color: document.getElementById('color').value, fillColor: document.getElementById('color').value, fillOpacity: 0.5});
     centroid = L.marker([centroid.coordinate_lat, centroid.coordinate_long],{
     icon: greenIcon
     }).addTo(map);
 
     //get initial centroidPoint
     centroidPoint = getPolygonCentroid(polygonPoints);
+
+    //draw points from plants
+    plants.forEach(plant =>{
+      plantMarkers.push(L.circleMarker([parseFloat(plant.coordinate_lat), parseFloat(plant.coordinate_long)], {
+        color: plant.color,
+        radius: 1,
+        opacity: 1,
+      }).addTo(map));
+    });
   
     //polygon event
     function onMapClick(e) {
@@ -110,11 +151,11 @@
       // remove previous polygon
       refreshPolygon();
   
-      //find centroid
-      centroidPoint = getPolygonCentroid(polygonPoints);
-      centroid = L.marker([centroidPoint.x, centroidPoint.y],{
-        icon: greenIcon
-      }).addTo(map);
+      // //find centroid
+      // centroidPoint = getPolygonCentroid(polygonPoints);
+      // centroid = L.marker([centroidPoint.x, centroidPoint.y],{
+      //   icon: greenIcon
+      // }).addTo(map);
   
     }
     map.on('click', onMapClick);
@@ -137,11 +178,11 @@
   
             //refresh polygon
             refreshPolygon();
-            //find centroid
-            centroidPoint = getPolygonCentroid(polygonPoints);
-            centroid = L.marker([centroidPoint.x, centroidPoint.y],{
-                icon: greenIcon
-            }).addTo(map);
+            // //find centroid
+            // centroidPoint = getPolygonCentroid(polygonPoints);
+            // centroid = L.marker([centroidPoint.x, centroidPoint.y],{
+            //     icon: greenIcon
+            // }).addTo(map);
 
             setTimeout(function() {
               map.on('click', mapClickListen);
@@ -160,7 +201,16 @@
       }
       
       //create new polygon
-      polygon = L.polygon(polygonPoints).addTo(map);
+      polygon = L.polygon(polygonPoints).addTo(map).setStyle({color: document.getElementById('color').value, fillColor: document.getElementById('color').value, fillOpacity: 0.5});
+      //find centroid
+      centroidPoint = getPolygonCentroid(polygonPoints);
+      centroid = L.marker([centroidPoint.x, centroidPoint.y],{
+        icon: greenIcon
+      }).addTo(map);
+
+      plantMarkers.forEach(plantMarker =>{
+        plantMarker.bringToFront();
+      });
     }
   
     function getPolygonCentroid(points) {
@@ -191,18 +241,38 @@
       var polygonJSON = JSON.stringify(polygonPoints);
       e.preventDefault();
       $.ajax({
-          url: "/nursery/update",
-          type: "POST",
-          data: {
-                id: nurseryId,
-                name: nameSend,
-                locationLat: centroidPoint.x,
-                locationLong: centroidPoint.y,
-                polygonPoints: polygonJSON,
-          },
-          success: function(data){
-            window.location.href = "/nursery/"+data.id;
+        url: "/nursery/update",
+        type: "POST",
+        data: {
+              id: nurseryId,
+              name: nameSend,
+              locationLat: centroidPoint.x,
+              locationLong: centroidPoint.y,
+              polygonPoints: polygonJSON,
+              color: document.getElementById('color').value
+        },
+        success: function(data){
+          window.location.href = "/nursery/"+data.id;
+        },
+        error: function (jqXHR, exception) {
+          var msg = '';
+          if (jqXHR.status === 0) {
+              msg = 'Not connect.\n Verify Network.';
+          } else if (jqXHR.status == 404) {
+              msg = 'Requested page not found. [404]';
+          } else if (jqXHR.status == 500) {
+              msg = 'Internal Server Error [500].';
+          } else if (exception === 'parsererror') {
+              msg = 'Requested JSON parse failed.';
+          } else if (exception === 'timeout') {
+              msg = 'Time out error.';
+          } else if (exception === 'abort') {
+              msg = 'Ajax request aborted.';
+          } else {
+              msg = 'Uncaught Error.\n' + jqXHR.responseText;
           }
+          alert(msg);
+        }
       });
     });
   

@@ -62,3 +62,5 @@
 .leaf-overlay-below{
 	z-index: 1;
 }
+.leaflet-overlay-pane { z-index: 5; }
+.leaflet-shadow-pane  { z-index: 4; }

@@ -1,7 +1,15 @@
 <div class="w3-container" style="height: 30vh;">
   <div class="w3-card-4 p-4 mb-4">
     <form action="/createClone" method="POST">
-      <input type="text" name="name" placeholder="Name" required>
+      <!-- <input type="text" name="name" placeholder="Name" required> -->
+      <div class="row mb-2">
+        <div class="col">
+          <input id="nameInput" type="text" name="name" placeholder="Name" style="width: 100%;" required>
+        </div>
+        <div class="col">
+          <input type="color" id="color" name="color" value="#ffc0c0" style="height: 100%;">
+        </div>
+      </div>
       <button class="btn" type="submit">Create Clone</button>
     </form>
   </div>
@@ -12,6 +20,8 @@
                 <tr>
                   <th>ID</th>
                   <th>Name</th>
+                  <th>Color</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -19,6 +29,33 @@
                   <tr>
                     <td><%= row.id %></td>
                     <td><%= row.name %></td>
+                    <td>
+                      <svg width="20" height="20">
+                        <rect width="20" height="20" style='fill:<%= row.color %>' />
+                      </svg>
+                    </td>
+                    <td>
+                      <button onclick="document.getElementById('editClone-<%= row.id %>').style.display='block';" class="w3-button">Edit</button>
+                    </td>
+                    <!-- Edit modal -->
+                    <div id="editClone-<%= row.id %>" class="w3-modal">
+                      <div class="w3-modal-content">
+                        <div class="w3-container">
+                          <span onclick="document.getElementById('editClone-<%= row.id %>').style.display='none'" class="w3-button w3-display-topright">&times;</span>
+                          <form id="editCloneForm" method="POST" action="/updateClone/<%= row.id %>">
+                            <div class="row mb-2">
+                              <div class="col">
+                                <input id="nameInput" type="text" name="name" value=<%= row.name %> placeholder="Name" style="width: 100%;" required>
+                              </div>
+                              <div class="col">
+                                <input type="color" id="color" name="color" value="<%= row.color %>" style="height: 100%;">
+                              </div>
+                            </div>
+                            <button class="btn" type="submit">Update</button>
+                          </form>
+                        </div>
+                      </div>
+                    </div>
                   </tr>
                 <% }); %>
               </tbody>

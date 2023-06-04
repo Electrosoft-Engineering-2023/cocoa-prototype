@@ -13,7 +13,8 @@
                     <th>Name</th>
                     <th>Latitude</th>
                     <th>Longitude</th>
-                    <th>View</th>
+                    <!-- <th>No. of Plants</th> -->
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -26,7 +27,7 @@
                       <td>
                         <!-- Trigger/Open the Modal -->
                         <a href='/nursery/<%= row.id %>'
-                        class="w3-button">View Nursery</a>
+                        class="w3-button">View</a>
                       </td>
 
                     </tr>
@@ -46,8 +47,16 @@
       <span onclick="destroyMap()"
       class="w3-button w3-display-topright">&times;</span>
       <form id="nurseryForm" method="POST">
-        <input id="nameInput" type="text" name="name" placeholder="Name" required>
+        <div class="row mb-2">
+          <div class="col">
+            <input id="nameInput" type="text" name="name" placeholder="Name" style="width: 100%;" required>
+          </div>
+          <div class="col">
+            <input type="color" id="color" name="color" value="#ffc0c0" style="height: 100%;">
+          </div>
+        </div>
         <div id="map" style="height: 400px;" class="leaf-overlay-below"></div>
+
         <button class="btn" type="submit">Create Nursery</button>
       </form>
     </div>
@@ -130,7 +139,7 @@
     }).addTo(map));
     // remove previous polygon
     refreshPolygon();
-    polygon = L.polygon(polygonPoints).addTo(map);
+    polygon = L.polygon(polygonPoints).addTo(map).setStyle({color: document.getElementById('color').value, fillColor: document.getElementById('color').value, fillOpacity: 0.5});
 
     //find centroid
     centroidPoint = getPolygonCentroid(polygonPoints);
@@ -159,7 +168,7 @@
 
           //refresh polygon
           refreshPolygon();
-          polygon = L.polygon(polygonPoints).addTo(map);
+          polygon = L.polygon(polygonPoints).addTo(map).setStyle({color: document.getElementById('color').value, fillColor: document.getElementById('color').value, fillOpacity: 0.5});
           //place centroid marker again
           centroidPoint = getPolygonCentroid(polygonPoints);
           centroid = L.marker([centroidPoint.x, centroidPoint.y],{
@@ -184,7 +193,7 @@
     }
     
     //create new polygon
-    // polygon = L.polygon(polygonPoints).addTo(map);
+    // polygon = L.polygon(polygonPoints).addTo(map).setStyle({color: document.getElementById('color').value, fillColor: document.getElementById('color').value, fillOpacity: 0.5});
   }
 
   function getPolygonCentroid(points) {
@@ -222,16 +231,16 @@
             locationLat: centroidPoint.x,
             locationLong: centroidPoint.y,
             polygonPoints: polygonJSON,
+            color: document.getElementById('color').value
         },
         success: function(data){
-          console.log(data);
           window.location.href = "/nursery";
         }
     });
   });
 
   function openCreateModal(){
-    document.getElementById('id01').style.display='block'
+    document.getElementById('id01').style.display='block';
     refreshMap();
   }
 
