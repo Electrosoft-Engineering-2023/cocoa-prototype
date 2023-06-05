@@ -13,34 +13,23 @@
             <div id="map" style="height: 400px;" class="leaf-overlay-below"></div>
         </form>
     </div>
-    <div class="w3-card-4 mb-3 w3-row">    
-      <div class="w3-col m3">
-        <div class="w3-center">
-          <h3>Number of Plants</h3>
-          <p class="w3-xxxlarge"><%= plants.length %></p>
-        </div>
-      </div>
-      <div class="w3-col m3">
-        <div class="w3-center">
-          <h3>Clones Used</h3>
-          <p class="w3-xxxlarge"><%= plants.length %></p>
-        </div>
-      </div>      
-      <div class="w3-col m3">
-        <div class="w3-center">
-          <h3>Number of Workers</h3>
-          <p class="w3-xxxlarge"><%= plants.length %></p>
-        </div>
-      </div>
-      <div class="w3-col m3">
-        <div class="w3-center">
-          <h3>Estimated Area Coverage</h3>
-          <p class="w3-xxxlarge"><%= plants.length %></p>
-        </div>
-      </div>
-
-
+    <div class="w3-card-4 mb-3 w3-row"> 
+      <table class="w3-table w3-centered">
+        <tr>
+          <th><h3>Number of Plants</h3></th>
+          <th><h3>Clones Used</h3></th>
+          <th><h3>Number of Workers</h3></th>
+          <th><h3>Estimated Area Coverage</h3></th>
+        </tr>
+        <tr>
+          <td><p class="w3-xxxlarge"><%= plants.length %></p></td>
+          <td><p class="w3-xxxlarge"><%= plants.length %></p></td>
+          <td><p class="w3-xxxlarge"><%= plants.length %></p></td>
+          <td><p class="w3-xxxlarge"><%= plants.length %></p></td>
+        </tr>
+      </table>
     </div>
+
 
     <div class="w3-card-4 p-4 mb-4">
       <div class="table-responsive w3-padding">                 
