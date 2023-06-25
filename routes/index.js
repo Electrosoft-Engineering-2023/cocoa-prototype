@@ -96,6 +96,31 @@ router.post('/updateClone/:id', function(req, res) {
   });
 });
 
+router.post('/getClones', function(req, res, next) {
+  pool.connect(async function (err, client, done) {
+    if (err) throw new Error(err);
+
+    var query = format('SELECT * from clone ORDER BY id ASC ')
+    const { rows } = await client.query(query);
+
+    done();
+
+    res.send(JSON.stringify(rows));
+  });   
+});
+
+router.post('/getNurseries', function(req, res, next) {
+  pool.connect(async function (err, client, done) {
+    if (err) throw new Error(err);
+
+    var query = format('SELECT * from nursery ORDER BY id ASC ')
+    const { rows } = await client.query(query);
+
+    done();
+
+    res.send(JSON.stringify(rows));
+  });   
+});
 
 router.post('/createUser', function(req, res) {
   const name = req.body.name;

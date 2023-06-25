@@ -18,21 +18,21 @@ function updatePlantJob(){
                 console.log(text);
 
                 // Extract tag data
-                    // Seperate string into array by comma
-                    const strTag = plant_scan.rows[i].tag_text;
-                    const arrTag = strTag.split(",");
+                // Seperate string into array by comma
+                const strTag = plant_scan.rows[i].tag_text;
+                const arrTag = strTag.split(",");
 
-                    const location_origin = arrTag[1].split(" ");
+                const location_origin = arrTag[1].split(" ");
 
-                    //clone,location_origin,date_sow,nursery,dsb
+                //clone,location_origin,date_sow,nursery,dsb
 
-                    //find clone id
-                    console.log("Finding clone...");
-                    const clone = await client.query('SELECT * from clone WHERE name=$1', [arrTag[0]]);
+                //find clone id
+                console.log("Finding clone...");
+                const clone = await client.query('SELECT * from clone WHERE name=$1', [arrTag[0]]);
 
-                    //find nursery id
-                    console.log("Finding nursery...");
-                    const nursery = await client.query('SELECT * from nursery WHERE name=$1', [arrTag[3]]);
+                //find nursery id
+                console.log("Finding nursery...");
+                const nursery = await client.query('SELECT * from nursery WHERE name=$1', [arrTag[3]]);
 
 
                 // Mode 1: Update plant data
